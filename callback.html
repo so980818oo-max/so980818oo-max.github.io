@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MUSE – TikTok OAuth Callback</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; line-height: 1.5; color: #111; }
+    code, pre { background: #f4f4f5; border-radius: 8px; }
+    pre { padding: 16px; overflow: auto; word-break: break-all; white-space: pre-wrap; }
+    .ok { color: #15803d; }
+    .err { color: #b91c1c; }
+    button { margin-top: 12px; padding: 10px 14px; border-radius: 8px; border: 1px solid #ddd; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>MUSE TikTok OAuth Callback</h1>
+  <p id="status">Reading authorization response…</p>
+  <pre id="out"></pre>
+  <button id="copy" hidden>Copy code</button>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+    const errorDescription = params.get('error_description');
+    const status = document.getElementById('status');
+    const out = document.getElementById('out');
+    const copyBtn = document.getElementById('copy');
+
+    if (error) {
+      status.className = 'err';
+      status.textContent = 'Authorization failed';
+      out.textContent = error + (errorDescription ? '\n' + errorDescription : '');
+    } else if (code) {
+      status.className = 'ok';
+      status.textContent = 'Authorization code received. You can close this tab after copying.';
+      out.textContent = code;
+      copyBtn.hidden = false;
+      copyBtn.onclick = async () => {
+        await navigator.clipboard.writeText(code);
+        copyBtn.textContent = 'Copied';
+      };
+      // also leave breadcrumbs for automation
+      document.title = 'MUSE OAuth OK';
+      window.__MUSE_OAUTH__ = { code, state };
+    } else {
+      status.className = 'err';
+      status.textContent = 'No code found in URL';
+      out.textContent = window.location.href;
+    }
+  </script>
+</body>
+</html>
